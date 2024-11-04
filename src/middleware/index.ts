@@ -17,6 +17,8 @@ import { scrubTokens, mergeMaybe, ERRORS } from "../utils";
 import { validDateTime } from "../utils/datetime";
 import { parseSortFields } from "../utils/sort";
 
+import { ALL_PROVIDER } from "../routes/rootCatalog"
+
 const STAC_QUERY_MAX = 5000;
 
 // Will live in warm lambda instances for 10 minutes
@@ -86,6 +88,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
 };
 
 export const refreshProviderCache = async (req: Request, _res: Response, next: NextFunction) => {
+  console.log("Provider cache")
   const isCloudStacReq = req.headers["cloud-stac"] === "true";
 
   if (cachedProviders.isEmpty() || (isCloudStacReq && cachedCloudProviders.isEmpty())) {
@@ -139,7 +142,8 @@ export const validateProvider = async (req: Request, _res: Response, next: NextF
         `Provider [${providerId}] not found or does not have any visible cloud hosted collections.`
       )
     );
-  } else if (!provider) {
+  // If it's not the 'ALL' provider and the provider ID cannot be found then throw an error
+  } else if (!provider && providerId != ALL_PROVIDER.toString()) {
     next(new ItemNotFound(`Provider [${providerId}] not found.`));
   } else {
     req.provider = provider;

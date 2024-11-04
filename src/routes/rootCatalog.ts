@@ -7,7 +7,11 @@ import { getBaseUrl, stacContext } from "../utils";
 
 const STAC_VERSION = process.env.STAC_VERSION ?? "1.0.0";
 
-const ALL_PROVIDER = "ALL"
+export const ALL_PROVIDER = "ALL"
+export const ALL_PROVIDERS = {
+  "provider-id": ALL_PROVIDER.toUpperCase(),
+  "short-name": ALL_PROVIDER.toLowerCase()
+};
 
 const selfLinks = (req: Request): Link[] => {
   const { stacRoot, id } = stacContext(req);
@@ -60,12 +64,8 @@ export const rootCatalogHandler = async (req: Request, res: Response) => {
     : req.cache?.providers.getAll();
 
   // Add the 'all' provider to allow querying of entire CMR collection catalog via Collection Search extension
-  const all = {
-    "provider-id": ALL_PROVIDER.toUpperCase(),
-    "short-name": ALL_PROVIDER.toLowerCase()
-  };
 
-  providers?.push(all)
+  providers?.push(ALL_PROVIDERS)
 
   const _selfLinks = selfLinks(req);
   const _providerLinks = providerLinks(req, providers ?? []);

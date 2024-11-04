@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { Provider } from "../models/CmrModels";
 import { mergeMaybe } from "../utils";
+import { ALL_PROVIDERS } from "../routes/rootCatalog"
 
 const CMR_LB_URL = process.env.CMR_LB_URL;
 const CMR_LB_INGEST = `${CMR_LB_URL}/ingest`;
@@ -32,6 +33,7 @@ export const conformance = [
 export const getProviders = async (): Promise<[string, null] | [null, Provider[]]> => {
   try {
     const { data: providers } = await axios.get(`${CMR_LB_INGEST}/providers`);
+    providers.push(ALL_PROVIDERS);
     return [null, providers];
   } catch (err) {
     console.error("A problem occurred fetching providers", err);
