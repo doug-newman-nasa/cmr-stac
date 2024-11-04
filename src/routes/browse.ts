@@ -7,6 +7,7 @@ import { buildQuery, stringifyQuery } from "../domains/stac";
 import { ItemNotFound } from "../models/errors";
 import { getBaseUrl, mergeMaybe, stacContext } from "../utils";
 import { STACCollection } from "../@types/StacCollection";
+import { ALL_PROVIDER, ALL_PROVIDERS } from "./rootCatalog";
 
 const collectionLinks = (req: Request, nextCursor?: string | null): Links => {
   const { stacRoot, self } = stacContext(req);
@@ -49,8 +50,20 @@ const collectionLinks = (req: Request, nextCursor?: string | null): Links => {
 
 export const collectionsHandler = async (req: Request, res: Response): Promise<void> => {
   const { headers } = req;
+  console.log("collectionsHandler")
 
   const query = await buildQuery(req);
+
+  console.log("Query: " + JSON.stringify(query))
+
+  // If the query contains a "provider": "ALL" clause, we need to remove it as
+  // this is a 'special' provider that means 'all providers'. The absence
+  // of a provider clause gives the right query.
+  if ("provider" in query) {
+    if (query.provider == ALL_PROVIDER) {
+      delete query.provider;
+    } 
+  }
 
   const { cursor, items: collections } = await getCollections(query, {
     headers,
@@ -74,9 +87,14 @@ export const collectionsHandler = async (req: Request, res: Response): Promise<v
   });
 
   const links = collectionLinks(req, cursor);
-
+  
+  // Special case. If provider is 'ALL' use 'provided by CMR'
+  let provider = self.split("/").at(-2)
+  if (provider == ALL_PROVIDER) {
+    provider = "CMR"
+  }
   const collectionsResponse = {
-    description: `All collections provided by ${self.split("/").at(-2)}`,
+    description: `All collections provided by ${provider}`,
     links,
     collections,
   };

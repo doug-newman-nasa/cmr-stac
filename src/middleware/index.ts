@@ -88,7 +88,6 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
 };
 
 export const refreshProviderCache = async (req: Request, _res: Response, next: NextFunction) => {
-  console.log("Provider cache")
   const isCloudStacReq = req.headers["cloud-stac"] === "true";
 
   if (cachedProviders.isEmpty() || (isCloudStacReq && cachedCloudProviders.isEmpty())) {
